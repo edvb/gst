@@ -67,7 +67,7 @@ http_post(char *content, long okcode)
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user);
 		} else {
 			curl_easy_setopt(curl, CURLOPT_USERNAME, user);
-			curl_easy_setopt(curl, CURLOPT_PASSWORD, getpass("Github password: "));
+			curl_easy_setopt(curl, CURLOPT_PASSWORD, getpass("GitHub password: "));
 		}
 	}
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, content);
@@ -78,7 +78,7 @@ http_post(char *content, long okcode)
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
 	curl_easy_cleanup(curl);
 	if (code != okcode)
-		die("%s: could not create gist: %s", argv0, resstr.ptr);
+		die("%s: could not create Gist: %s", argv0, resstr.ptr);
 
 	return resstr;
 }

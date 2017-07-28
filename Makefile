@@ -1,4 +1,4 @@
-# gs - gist creator
+# gs - painless gist creator
 # See LICENSE file for copyright and license details.
 
 include config.mk
@@ -59,8 +59,9 @@ uninstall:
 
 man:
 	@echo -n updating man page $(EXE).1 ...
-	@cat README.md | sed "s/# $(EXE)/# $(EXE) 1\n\n##NAME\n\n$(EXE) /" | \
-		md2man-roff | sed "s/\\[la\]/\</" | sed "s/\\[ra\]/\>/" > $(EXE).1
+	@cat README.md | \
+		sed "1s/$(EXE)/$(EXE) 1 \"`date +%B\ %Y`\" \"$(EXE)\ $(VERSION)\"\n\n##NAME\n\n& /" | \
+		md2roff - | sed "9s/]/]\ /g" | sed "9s/|/|\ /g" > $(EXE).1
 	@echo \ done
 
 .PHONY: all options clean install uninstall man
