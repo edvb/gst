@@ -49,6 +49,7 @@ str_write(void *ptr, size_t size, size_t nmemb, Str *s)
 static Str
 http_post(char *content, long okcode)
 {
+	char *resmsg;
 	long code;
 	CURL *curl;
 	CURLcode res;
@@ -58,8 +59,14 @@ http_post(char *content, long okcode)
 	resstr.ptr = emalloc(resstr.len+1);
 	resstr.ptr[0] = '\0';
 
-	if (!(curl = curl_easy_init()))
-		die("%s: cURL: could not init", argv0);
+	/* init cURL */
+	curl_global_init(CURL_GLOBAL_ALL);
+	if (!(curl = curl_easy_init())) {
+		curl_global_cleanup();
+		die(1, "%s: cURL: could not init", argv0);
+	}
+
+	/* set cURL options */
 	curl_easy_setopt(curl, CURLOPT_URL, GIST_URL);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, "gs/"VERSION);
 	if (user) {
@@ -73,12 +80,24 @@ http_post(char *content, long okcode)
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, content);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, str_write);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resstr);
-	if ((res = curl_easy_perform(curl)) != CURLE_OK)
-		die("%s: cURL: %s", argv0, curl_easy_strerror(res));
+
+	/* run cURL */
+	if ((res = curl_easy_perform(curl)) != CURLE_OK) {
+		curl_global_cleanup();
+		die(1, "%s: cURL: %s", argv0, curl_easy_strerror(res));
+	}
+
+	/* response checking and cleanup */
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
 	curl_easy_cleanup(curl);
-	if (code != okcode)
-		die("%s: could not create Gist: %s", argv0, resstr.ptr);
+	curl_global_cleanup();
+	if (code != okcode) {
+		json_scanf(resstr.ptr, resstr.len, "{message: %Q}", &resmsg);
+		die(-1, "%s: could not create Gist: %s", argv0, resmsg);
+		free(resmsg);
+		exit(1);
+	}
+
 
 	return resstr;
 }
@@ -111,7 +130,7 @@ files_js(char *files[], int filec)
 	struct json_out jout = JSON_OUT_BUF(js, BUF_SIZE);
 
 	if (!desc)
-		die("%s: description not given", argv0);
+		die(1, "%s: description not given", argv0);
 	json_printf(&jout, "{ description: %Q, public: %B, files: {", desc, pub);
 
 	/* add each file */
@@ -119,18 +138,17 @@ files_js(char *files[], int filec)
 		if (i)      /* insert comma if this is another file */
 			json_printf(&jout, ",");
 		if (filec && !(fp = fopen(files[i], "r")))
-			die("%s: %s: could not load file", argv0, files[i]);
+			die(1, "%s: %s: could not load file", argv0, files[i]);
 		if (filec)  /* set file name if given */
 			fname = files[i];
 		if (!fname) /* check for file name when using stdin */
-			die("%s: file name not given", argv0);
+			die(1, "%s: file name not given", argv0);
 		fbuf = file_str(fp);
 		json_printf(&jout, "%Q: { content: %Q }", basename(fname), fbuf);
+		efree(fbuf);
 	}
 
 	json_printf(&jout, "} }");
-
-	efree(fbuf);
 
 	return js;
 }
@@ -155,11 +173,10 @@ gs_new(char *files[], int filec)
 }
 
 static void
-usage(const int e)
+usage(const int eval)
 {
-	fprintf(stderr, "usage: %s [-pPhv] [-d DESCRIPTION] [-f FILENAME]\n"
-	                "          [-u USER[:PASSWORD] | -U] [FILES ...]\n", argv0);
-	exit(e);
+	die(eval, "usage: %s [-pPhv] [-d DESCRIPTION] [-f FILENAME]\n"
+	          "          [-u USER[:PASSWORD] | -U] [FILES ...]", argv0);
 }
 
 int
@@ -193,11 +210,7 @@ main(int argc, char *argv[])
 		usage(1);
 	} ARGEND;
 
-	curl_global_init(CURL_GLOBAL_ALL);
-
 	gs_new(argv, argc);
-
-	curl_global_cleanup();
 
 	return 0;
 }

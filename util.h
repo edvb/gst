@@ -11,4 +11,4 @@ void *erealloc(void *p, size_t size);
 char *estrdup(char *s);
 void  efree(void *p);
 
-void die(const char *errstr, ...);
+void die(int eval, const char *fmt, ...);
