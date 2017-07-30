@@ -2,7 +2,7 @@
 
 ## SYNOPSIS
 
-**gs** [**-pPhv**] [**-d** *DESCRIPTION*] [**-f** *FILENAME*] [**-u** *USER*[: *PASSWORD*] | **-U**] [*FILES* ...]
+**gs** [**-pPhv**] [**-d** *DESCRIPTION*] [**-f** *FILENAME*] [**-g** *GITHUB\_URL*] [**-u** *USER*[: *PASSWORD*] | **-U**] [*FILES* ...]
 
 ## DESCRIPTION
 
@@ -17,6 +17,10 @@ Set Gist description
 #### -f FILENAME
 
 Set file name when reading from `stdin`
+
+#### -g GITHUB_URL
+
+Change the GitHub API URL
 
 #### -p
 

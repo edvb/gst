@@ -11,7 +11,6 @@
 #include "util.h"
 
 /* defines */
-#define GIST_URL "https://api.github.com/gists"
 #define LBUF_SIZE 1024   /* TODO remove BUF_SIZEs */
 #define BUF_SIZE  100000
 
@@ -67,7 +66,7 @@ http_post(char *content, long okcode)
 	}
 
 	/* set cURL options */
-	curl_easy_setopt(curl, CURLOPT_URL, GIST_URL);
+	curl_easy_setopt(curl, CURLOPT_URL, ghurl);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, "gs/"VERSION);
 	if (user) {
 		if (strchr(user, ':')) {
@@ -175,7 +174,7 @@ gs_new(char *files[], int filec)
 static void
 usage(const int eval)
 {
-	die(eval, "usage: %s [-pPhv] [-d DESCRIPTION] [-f FILENAME]\n"
+	die(eval, "usage: %s [-pPhv] [-d DESCRIPTION] [-f FILENAME] [-g GITHUB_URL]\n"
 	          "          [-u USER[:PASSWORD] | -U] [FILES ...]", argv0);
 }
 
@@ -188,6 +187,9 @@ main(int argc, char *argv[])
 		break;
 	case 'f':
 		fname = EARGF(usage(1));
+		break;
+	case 'g':
+		ghurl = EARGF(usage(1));
 		break;
 	case 'p':
 		pub = 0;
