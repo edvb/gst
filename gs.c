@@ -6,8 +6,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "arg.h"
-#include "frozen.h"
+#include "extern/arg.h"
+#include "extern/frozen.h"
 #include "util.h"
 
 /* defines */

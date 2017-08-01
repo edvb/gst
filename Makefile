@@ -4,7 +4,7 @@
 include config.mk
 
 EXE = gs
-SRC = $(wildcard *.c)
+SRC = $(wildcard *.c) $(wildcard */*.c)
 OBJ = $(SRC:.c=.o)
 
 all: options $(EXE)
@@ -22,7 +22,7 @@ options:
 	@echo $(CC) $<
 	@$(CC) -c -o $@ $< $(CFLAGS)
 
-${OBJ}: config.h config.mk
+$(OBJ): config.h config.mk
 
 config.h:
 	@echo creating $@ from config.def.h
