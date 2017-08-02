@@ -2,7 +2,7 @@
 
 ## SYNOPSIS
 
-**gs** [**-pPhv**] [**-d** *DESCRIPTION*] [**-f** *FILENAME*] [**-g** *GITHUB\_URL*] [**-u** *USER*[: *PASSWORD*] | **-U**] [*FILES* ...]
+**gs** [**-pPhv**] [**-e** *ID* [**-D** *FILE*]] [**-d** *DESCRIPTION*] [**-f** *FILENAME*] [**-g** *GITHUB\_URL*] [**-u** *USER*[: *PASSWORD*] | **-U**] [*FILES* ...]
 
 ## DESCRIPTION
 
@@ -10,9 +10,17 @@ Easy way to create GitHub Gists through the command line.
 
 ## OPTIONS
 
+#### -e ID
+
+Edit previously created Gist specified with *ID*
+
 #### -d DESCRIPTION
 
 Set Gist description
+
+#### -D FILE
+
+Delete *FILE* from Gist being edited
 
 #### -f FILENAME
 

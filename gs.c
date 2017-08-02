@@ -13,6 +13,7 @@
 /* defines */
 #define LBUF_SIZE 1024   /* TODO remove BUF_SIZEs */
 #define BUF_SIZE  100000
+#define URL_SIZE  2048
 
 /* typedefs */
 typedef struct {
@@ -22,6 +23,7 @@ typedef struct {
 
 /* functions */
 static size_t str_write(void *ptr, size_t size, size_t nmemb, Str *s);
+static Str http_post(char *content);
 static char *file_str(FILE *fp);
 static char *files_js(char *files[], int filec);
 static void gs_new(char *files[], int filec);
@@ -46,9 +48,9 @@ str_write(void *ptr, size_t size, size_t nmemb, Str *s)
 
 /* HTTP POST request from content, returning response */
 static Str
-http_post(char *content, long okcode)
+http_post(char *content)
 {
-	char *resmsg;
+	char *resmsg, url[URL_SIZE];
 	long code;
 	CURL *curl;
 	CURLcode res;
@@ -66,7 +68,11 @@ http_post(char *content, long okcode)
 	}
 
 	/* set cURL options */
-	curl_easy_setopt(curl, CURLOPT_URL, ghurl);
+	if (gist)
+		snprintf(url, sizeof(url), "%s/%s", ghurl, gist);
+	else
+		strcpy(url, ghurl);
+	curl_easy_setopt(curl, CURLOPT_URL, url);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, "gs/"VERSION);
 	if (user) {
 		if (strchr(user, ':')) {
@@ -76,6 +82,8 @@ http_post(char *content, long okcode)
 			curl_easy_setopt(curl, CURLOPT_PASSWORD, getpass("GitHub password: "));
 		}
 	}
+	if (gist)
+		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PATCH");
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, content);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, str_write);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resstr);
@@ -90,7 +98,7 @@ http_post(char *content, long okcode)
 	curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &code);
 	curl_easy_cleanup(curl);
 	curl_global_cleanup();
-	if (code != okcode) {
+	if (code != (gist ? 200 : 201)) { /* 200 returned when editing gist, 201 when creating */
 		json_scanf(resstr.ptr, resstr.len, "{message: %Q}", &resmsg);
 		die(-1, "%s: could not create Gist: %s", argv0, resmsg);
 		free(resmsg);
@@ -128,20 +136,28 @@ files_js(char *files[], int filec)
 	FILE *fp = stdin;
 	struct json_out jout = JSON_OUT_BUF(js, BUF_SIZE);
 
-	if (!desc)
-		die(1, "%s: description not given", argv0);
-	json_printf(&jout, "{ description: %Q, public: %B, files: {", desc, pub);
+	json_printf(&jout, "{ public: %B,", pub);
+	if (!desc && !gist) /* when creating new Gist, if no description given, make it empty */
+		desc = "";
+	if (desc)           /* only add description as blank if gist is being created */
+		json_printf(&jout, "description: %Q, ", desc);
+	json_printf(&jout, "files: {");
+
+	if (del) /* delete file if given by setting it to NULL */
+		json_printf(&jout, "%Q: %Q", basename(del), NULL);
 
 	/* add each file */
 	for (i = 0; !i || i < filec; i++) {
-		if (i)      /* insert comma if this is another file */
-			json_printf(&jout, ",");
 		if (filec && !(fp = fopen(files[i], "r")))
 			die(1, "%s: %s: could not load file", argv0, files[i]);
-		if (filec)  /* set file name if given */
+		if (filec)          /* set file name if given */
 			fname = files[i];
-		if (!fname) /* check for file name when using stdin */
+		if (!fname && gist) /* don't need file if we are editing gist */
+			break;
+		if (!fname)         /* check for file name when using stdin */
 			die(1, "%s: file name not given", argv0);
+		if (i || del)       /* insert comma if this is another file */
+			json_printf(&jout, ",");
 		fbuf = file_str(fp);
 		json_printf(&jout, "%Q: { content: %Q }", basename(fname), fbuf);
 		efree(fbuf);
@@ -160,7 +176,7 @@ gs_new(char *files[], int filec)
 
 	js = files_js(files, filec);
 
-	resstr = http_post(js, 201);
+	resstr = http_post(js);
 
 	json_scanf(resstr.ptr, resstr.len, "{html_url: %Q}", &url);
 	printf("%s\n", url);
@@ -174,16 +190,22 @@ gs_new(char *files[], int filec)
 static void
 usage(const int eval)
 {
-	die(eval, "usage: %s [-pPhv] [-d DESCRIPTION] [-f FILENAME] [-g GITHUB_URL]\n"
-	          "          [-u USER[:PASSWORD] | -U] [FILES ...]", argv0);
+	die(eval, "usage: %s [-pPhv] [-e ID [-D FILE]] [-d DESCRIPTION] [-f FILENAME]\n"
+	          "          [-g GITHUB_URL] [-u USER[:PASSWORD] | -U] [FILES ...]", argv0);
 }
 
 int
 main(int argc, char *argv[])
 {
 	ARGBEGIN {
+	case 'e':
+		gist = EARGF(usage(1));
+		break;
 	case 'd':
 		desc = EARGF(usage(1));
+		break;
+	case 'D':
+		del = EARGF(usage(1));
 		break;
 	case 'f':
 		fname = EARGF(usage(1));
@@ -211,6 +233,9 @@ main(int argc, char *argv[])
 	default:
 		usage(1);
 	} ARGEND;
+
+	if (gist && !user)
+		die(1, "%s: cannot edit Gists without user", argv0);
 
 	gs_new(argv, argc);
 

@@ -1,20 +1,28 @@
 .\" x-roff document
 .do mso man.tmac
-.TH gs 1 "July 2017" "gs 0.0.0"
+.TH gs 1 "August 2017" "gs 0.0.0"
 .PP
 .SH NAME
 gs - painless gist creator
 .PP
 .SH SYNOPSIS
-\fBgs\fP [\fB-pPhv\fP] [\fB-d\fP \fIDESCRIPTION\fP] [\fB-f\fP \fIFILENAME\fP] [\fB-g\fP \fIGITHUB_URL\fP] [\fB-u\fP \fIUSER\fP[:\fIPASSWORD\fP] | \fB-U\fP] [\fIFILES\fP ...] 
+\fBgs\fP [\fB-pPhv\fP] [\fB-e\fP \fIID\fP [\fB-D\fP \fIFILE\fP] ] [\fB-d\fP \fIDESCRIPTION\fP] [\fB-f\fP \fIFILENAME\fP] [\fB-g\fP \fIGITHUB_URL\fP] [\fB-u\fP \fIUSER\fP[:\fIPASSWORD\fP] | \fB-U\fP] [\fIFILES\fP ...] 
 .PP
 .SH DESCRIPTION
 Easy way to create GitHub Gists through the command line.
 .PP
 .SH OPTIONS
 .TP
+\fB-e\fP \fIID\fP
+\fREdit previously created Gist specified with \fIID\fP
+.PP
+.TP
 \fB-d\fP \fIDESCRIPTION\fP
 \fRSet Gist description
+.PP
+.TP
+\fB-D\fP \fIFILE\fP
+\fRDelete \fIFILE\fP from Gist being edited
 .PP
 .TP
 \fB-f\fP \fIFILENAME\fP
