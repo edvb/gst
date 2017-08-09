@@ -59,9 +59,15 @@ uninstall:
 
 man:
 	@echo -n updating man page $(EXE).1 ...
-	@cat README.md | \
-		sed "1s/$(EXE)/$(EXE) 1 \"`date +%B\ %Y`\" \"$(EXE)\ $(VERSION)\"\n\n##NAME\n\n& /" | \
-		md2roff - | sed "9s/]/]\ /g" | sed "9s/|/|\ /g" > $(EXE).1
+	@(head -1 README.md | sed "s/$(EXE)/$(EXE) 1 \"`date +%B\ %Y`\" \"$(EXE)\ $(VERSION)\"\n\n##NAME\n\n&/"; \
+	  echo "\n##SYNOPSIS\n"; \
+	  ./$(EXE) -h 2>&1 | sed -E 's/(\<[_A-Z][_A-Z]+\>)/\*\1\*/g' | \
+	                     sed -E 's/(-[a-Z]+\>)/\*\*\1\*\*/g' | \
+	                     sed -E 's/(\<$(EXE)\>)/\*\*\1\*\*/g' | \
+	                     sed 's/_/\\_/g' | sed 's/:/:\ /g'| cut -d' ' -f2-; \
+	  echo "\n##DESCRIPTION"; \
+	  tail +2 README.md;) | \
+	 md2roff - | sed "9s/]/]\ /g" | sed "9s/|/|\ /g" > $(EXE).1
 	@echo \ done
 
 .PHONY: all options clean install uninstall man

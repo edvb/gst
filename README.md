@@ -1,11 +1,5 @@
 # gs \- painless gist creator
 
-## SYNOPSIS
-
-**gs** [**-pPhv**] [**-e** *ID* [**-D** *FILE*]] [**-d** *DESCRIPTION*] [**-f** *FILENAME*] [**-g** *GITHUB\_URL*] [**-u** *USER*[: *PASSWORD*] | **-U**] [*FILES* ...]
-
-## DESCRIPTION
-
 Easy way to create GitHub Gists through the command line.
 
 ## OPTIONS
