@@ -191,7 +191,7 @@ static void
 usage(const int eval)
 {
 	die(eval, "usage: %s [-pPhv] [-e ID [-D FILE]] [-d DESCRIPTION] [-f FILENAME]\n"
-	          "          [-g GITHUB_URL] [-u USER[:PASSWORD] | -U] [FILES ...]", argv0);
+	          "          [-g GITHUB_URL] [-u USER[:PASSWORD] | -U] FILES ...", argv0);
 }
 
 int

@@ -111,13 +111,20 @@ $ gs -u your-name:password plugin/func.vim doc/func.txt
 https://gist.github.com/<new-id>
 ```
 
+## CUSTOMIZATION
+
+gs is customized by creating a custom `config.h` and (re)compiling the source
+code. This keeps it fast, secure and simple. Most customization can be done
+through the command line interface however, so basic aliases could also be
+utilized.
+
 ## AUTHOR
 
-Ed van Bruggen <edvb54@gmail.com>
+Ed van Bruggen <ed@edryd.org>
 
 ## SEE ALSO
 
-See project page at <http://edryd.org/projects/gs.html>
+See project page at <https://edryd.org/projects/gs.html>
 
 View source code at <https://github.com/edvb/gs>
 

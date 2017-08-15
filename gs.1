@@ -6,7 +6,7 @@
 gs - painless gist creator
 .PP
 .SH SYNOPSIS
-\fBgs\fP [\fB-pPhv\fP] [\fB-e\fP \fIID\fP [\fB-D\fP \fIFILE\fP] ] [\fB-d\fP \fIDESCRIPTION\fP] [\fB-f\fP \fIFILENAME\fP] [\fB-g\fP \fIGITHUB_URL\fP] [\fB-u\fP \fIUSER\fP[:\fIPASSWORD\fP] | \fB-U\fP] [\fIFILES\fP ...] 
+\fBgs\fP [\fB-pPhv\fP] [\fB-e\fP \fIID\fP [\fB-D\fP \fIFILE\fP] ] [\fB-d\fP \fIDESCRIPTION\fP] [\fB-f\fP \fIFILENAME\fP] [\fB-g\fP \fIGITHUB_URL\fP] [\fB-u\fP \fIUSER\fP[:\fIPASSWORD\fP] | \fB-U\fP] \fIFILES\fP ...
 .PP
 .SH DESCRIPTION
 Easy way to create GitHub Gists through the command line.
@@ -145,11 +145,14 @@ https://gist.github.com/<new-id>
 .EE
 .RE
 .PP
+.SH CUSTOMIZATION
+gs is customized by creating a custom `\f[CR]config.h\fP' and (re)compiling the source code. This keeps it fast, secure and simple. Most customization can be done through the command line interface however, so basic aliases could also be utilized.
+.PP
 .SH AUTHOR
-Ed van Bruggen <edvb54@gmail.com>
+Ed van Bruggen <ed@edryd.org>
 .PP
 .SH SEE ALSO
-See project page at <http://edryd.org/projects/gs.html>
+See project page at <https://edryd.org/projects/gs.html>
 .PP
 View source code at <https://github.com/edvb/gs>
 .PP
