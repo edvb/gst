@@ -38,22 +38,6 @@ erealloc(void *p, size_t size)
 	return p;
 }
 
-char *
-estrdup(char *s)
-{
-	if (!(s = strdup(s)))
-		die(1, "strdup:");
-
-	return s;
-}
-
-void
-efree(void *p)
-{
-	if (p)
-		free(p);
-}
-
 void
 die(int eval, const char *fmt, ...)
 {
