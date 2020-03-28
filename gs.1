@@ -1,63 +1,63 @@
-.\" x-roff document
-.do mso man.tmac
-.TH gs 1 "August 2017" "gs 0.0.0"
+.TH GS 1 "March 2020" "gs 0.0.0"
 .PP
 .SH NAME
-gs - painless gist creator
+gs \- painless gist creator
 .PP
 .SH SYNOPSIS
-\fBgs\fP [\fB-pPhv\fP] [\fB-e\fP \fIID\fP [\fB-D\fP \fIFILE\fP] ] [\fB-d\fP \fIDESCRIPTION\fP] [\fB-f\fP \fIFILENAME\fP] [\fB-g\fP \fIGITHUB_URL\fP] [\fB-u\fP \fIUSER\fP[:\fIPASSWORD\fP] | \fB-U\fP] \fIFILES\fP ...
+gs [-pPhv] [-e ID [-D FILE]] [-d DESCRIPTION] [-f FILENAME] [-g GITHUB_URL] [-u USER[:PASSWORD] | -U] FILES ...
 .PP
 .SH DESCRIPTION
-Easy way to create GitHub Gists through the command line.
+.PP
+Easy way to create GitHub Gists through the command line. Simply give it the files to upload and gs will return the URL to the new gist.
 .PP
 .SH OPTIONS
 .TP
-\fB-e\fP \fIID\fP
-\fREdit previously created Gist specified with \fIID\fP
+\fB-e \fP\fIID\fP
+Edit previously created Gist specified with \fIID\fP
 .PP
 .TP
-\fB-d\fP \fIDESCRIPTION\fP
-\fRSet Gist description
+\fB-d \fP\fIDESCRIPTION\fP
+Set Gist description
 .PP
 .TP
-\fB-D\fP \fIFILE\fP
-\fRDelete \fIFILE\fP from Gist being edited
+\fB-D \fP\fIFILE\fP
+Delete \fIFILE\fP from Gist being edited
 .PP
 .TP
-\fB-f\fP \fIFILENAME\fP
-\fRSet file name when reading from `\f[CR]stdin\fP'
+\fB-f \fP\fIFILENAME\fP
+Set file name when reading from 'stdin'
 .PP
 .TP
-\fB-g\fP \fIGITHUB_URL\fP
-\fRChange the GitHub API URL
+\fB-g \fP\fIURL\fP
+Change the GitHub API URL (default: https://api.github.com/gists)
 .PP
 .TP
-\fB-p
-\fRMake Gist private
+\fB-p\fP
+Make Gist private
 .PP
 .TP
-\fB-P
-\fRMake Gist public (default)
+\fB-P\fP
+Make Gist public (default)
 .PP
 .TP
-\fB-u\fP \fIUSER\fP[:\fIPASSWORD\fP]
-\fRChange the GitHub account the Gist will be posted under. A password can given as well with a separating colon, a prompt is provided if not.
+\fB-u \fP\fIUSER\fP:PASSWORD
+Change the GitHub account the Gist will be posted under. A password can given as well with a separating colon, a prompt is provided if not.
 .PP
 .TP
-\fB-U
-\fRPost Gist anonymously (default)
+\fB-U\fP
+Post Gist anonymously (default)
 .PP
 .TP
-\fB-h
-\fRPrint help and exit
+\fB-h\fP
+Print help and exit
 .PP
 .TP
-\fB-v
-\fRPrint version info and exit
+\fB-v\fP
+Print version info and exit
 .PP
 .SH USAGE
-Create a new Gist of file `\f[CR]file.txt\fP':
+.PP
+Create a new gist of 'file.txt':
 .PP
 .RS 4
 .EX
@@ -67,8 +67,7 @@ https://gist.github.com/<new-id>
 
 .EE
 .RE
-.PP
-There is also support for multiple files in a single Gist:
+There is also support for multiple files in a single gist:
 .PP
 .RS 4
 .EX
@@ -78,8 +77,7 @@ https://gist.github.com/<new-id>
 
 .EE
 .RE
-.PP
-Specify the Gist's description:
+Specify the gist's description:
 .PP
 .RS 4
 .EX
@@ -89,8 +87,7 @@ https://gist.github.com/<new-id>
 
 .EE
 .RE
-.PP
-The Gist's URL can be piped to other programs, for example to your clipboard to be pasted else where:
+The gist's URL can be piped to other programs, for example to your clipboard to be pasted elsewhere:
 .PP
 .RS 4
 .EX
@@ -99,8 +96,7 @@ $ gs file.txt | xsel -bi
 
 .EE
 .RE
-.PP
-You can also create a new Gist from `\f[CR]stdin\fP'. The file name needs to be supplied however:
+You can also create a new gist from 'stdin'. The file name needs to be supplied however:
 .PP
 .RS 4
 .EX
@@ -110,19 +106,7 @@ https://gist.github.com/<new-id>
 
 .EE
 .RE
-.PP
-New Gists can be private as well:
-.PP
-.RS 4
-.EX
-
-$ gs -p personal.info
-https://gist.github.com/<new-id>
-
-.EE
-.RE
-.PP
-The new Gist can be posted under a GitHub user, a prompt will ask for your password:
+The new gist can be posted under a GitHub user, a prompt will ask for your password:
 .PP
 .RS 4
 .EX
@@ -133,7 +117,6 @@ https://gist.github.com/<new-id>
 
 .EE
 .RE
-.PP
 To skip the prompt your password can be supplied after a colon with the username:
 .PP
 .RS 4
@@ -144,17 +127,56 @@ https://gist.github.com/<new-id>
 
 .EE
 .RE
+New gists can be private when created under a user:
+.PP
+.RS 4
+.EX
+
+$ gs -p -u name personal.info
+https://gist.github.com/<new-id>
+
+.EE
+.RE
+You can also edit a previously created gist under your account, such as adding a new file or updating the description:
+.PP
+.RS 4
+.EX
+
+$ gs -e <id> -u name -d "new description" additional-file.txt
+https://gist.github.com/<id>
+
+.EE
+.RE
+It is even possible to delete files, although it should be noted the gist still exists even if you delete all the files within it due to the limitations of the API:
+.PP
+.RS 4
+.EX
+
+$ gs -e <id> -u name -D old.py
+https://gist.github.com/<id>
+
+.EE
+.RE
+.SH INSTALLATION
+.PP
+The only dependency needed to build gs is cURL. gs be compiled with a simple 'make' and 'sudo make install' will install the executable and man page.
 .PP
 .SH CUSTOMIZATION
-gs is customized by creating a custom `\f[CR]config.h\fP' and (re)compiling the source code. This keeps it fast, secure and simple. Most customization can be done through the command line interface however, so basic aliases could also be utilized.
+.PP
+gs can be customized by editing the custom 'config.h' and (re)compiling the source code. This keeps it fast, secure and simple. All customization can be done through the command line interface however, so basic aliases could also be utilized to change default options.
 .PP
 .SH AUTHOR
+.PP
 Ed van Bruggen <ed@edryd.org>
 .PP
 .SH SEE ALSO
+.PP
 See project page at <https://edryd.org/projects/gs.html>
 .PP
-View source code at <https://github.com/edvb/gs>
+View source code at <https://git.edryd.org/gs>
 .PP
 .SH LICENSE
+.PP
 zlib License
+.PP
+
