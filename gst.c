@@ -67,7 +67,7 @@ http_post(char *content)
 	else
 		strcpy(url, ghurl);
 	curl_easy_setopt(curl, CURLOPT_URL, url);
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, "gs/"VERSION);
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, "gst/"VERSION);
 	if (user) {
 		if (strchr(user, ':')) {
 			curl_easy_setopt(curl, CURLOPT_USERPWD, user);
@@ -95,7 +95,7 @@ http_post(char *content)
 	/* 200 returned when editing gist, 201 when creating */
 	if (code != (gist ? 200 : 201)) {
 		json_scanf(resstr.ptr, resstr.len, "{message: %Q}", &resmsg);
-		die(-1, "%s: [%d] could not create Gist: %s",
+		die(-1, "%s: [%d] could not create gist: %s",
 		         argv0, code, resmsg);
 		free(resmsg);
 		exit(1);
@@ -155,6 +155,7 @@ files_js(char *files[], int filec)
 			json_printf(&jout, ",");
 		fbuf = file_str(fp);
 		json_printf(&jout, "%Q: { content: %Q }", basename(fname), fbuf);
+		fclose(fp);
 		free(fbuf);
 	}
 
@@ -167,7 +168,7 @@ static void
 usage(const int eval)
 {
 	die(eval, "usage: %s [-pPhv] [-e ID [-D FILE]] [-d DESCRIPTION] [-f FILENAME]\n"
-	          "          [-g URL] [-u USER[:PASSWORD] | -U] FILES ...", argv0);
+	          "           [-g URL] [-u USER[:PASSWORD] | -U] FILES ...", argv0);
 }
 
 int
@@ -214,7 +215,7 @@ main(int argc, char *argv[])
 	} ARGEND;
 
 	if (gist && !user)
-		die(1, "%s: cannot edit Gists without user", argv0);
+		die(1, "%s: cannot edit gists without user", argv0);
 
 	js = files_js(argv, argc);
 	resstr = http_post(js);

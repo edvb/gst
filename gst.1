@@ -1,27 +1,27 @@
-.TH GS 1 "March 2020" "gs 0.0.0"
+.TH GST 1 "April 2020" "gst 0.0.0"
 .PP
 .SH NAME
-gs \- painless gist creator
+gst \- painless gist creator
 .PP
 .SH SYNOPSIS
-gs [-pPhv] [-e ID [-D FILE]] [-d DESCRIPTION] [-f FILENAME] [-g GITHUB_URL] [-u USER[:PASSWORD] | -U] FILES ...
+gst [-pPhv] [-e ID [-D FILE]] [-d DESCRIPTION] [-f FILENAME] [-g URL] [-u USER[:PASSWORD] | -U] FILES ...
 .PP
 .SH DESCRIPTION
 .PP
-Easy way to create GitHub Gists through the command line. Simply give it the files to upload and gs will return the URL to the new gist.
+Easy way to create GitHub Gists through the command line. Simply give it the files to upload and gst will return the URL to the new gist.
 .PP
 .SH OPTIONS
 .TP
 \fB-e \fP\fIID\fP
-Edit previously created Gist specified with \fIID\fP
+Edit previously created gist specified with \fIID\fP
 .PP
 .TP
 \fB-d \fP\fIDESCRIPTION\fP
-Set Gist description
+Set gist description
 .PP
 .TP
 \fB-D \fP\fIFILE\fP
-Delete \fIFILE\fP from Gist being edited
+Delete \fIFILE\fP from gist being edited
 .PP
 .TP
 \fB-f \fP\fIFILENAME\fP
@@ -33,19 +33,19 @@ Change the GitHub API URL (default: https://api.github.com/gists)
 .PP
 .TP
 \fB-p\fP
-Make Gist private
+Make gist private
 .PP
 .TP
 \fB-P\fP
-Make Gist public (default)
+Make gist public (default)
 .PP
 .TP
 \fB-u \fP\fIUSER\fP:PASSWORD
-Change the GitHub account the Gist will be posted under. A password can given as well with a separating colon, a prompt is provided if not.
+Change the GitHub account the gist will be posted under. A password can given as well with a separating colon, a prompt is provided if not.
 .PP
 .TP
 \fB-U\fP
-Post Gist anonymously (default)
+Post gist anonymously (default)
 .PP
 .TP
 \fB-h\fP
@@ -62,7 +62,7 @@ Create a new gist of 'file.txt':
 .RS 4
 .EX
 
-$ gs file.txt
+$ gst file.txt
 https://gist.github.com/<new-id>
 
 .EE
@@ -72,7 +72,7 @@ There is also support for multiple files in a single gist:
 .RS 4
 .EX
 
-$ gs README.md Makefile prog.c
+$ gst README.md Makefile prog.c
 https://gist.github.com/<new-id>
 
 .EE
@@ -82,7 +82,7 @@ Specify the gist's description:
 .RS 4
 .EX
 
-$ gs -d 'a cool shell script' script.sh
+$ gst -d 'a cool shell script' script.sh
 https://gist.github.com/<new-id>
 
 .EE
@@ -92,7 +92,7 @@ The gist's URL can be piped to other programs, for example to your clipboard to 
 .RS 4
 .EX
 
-$ gs file.txt | xsel -bi
+$ gst file.txt | xsel -bi
 
 .EE
 .RE
@@ -101,7 +101,7 @@ You can also create a new gist from 'stdin'. The file name needs to be supplied 
 .RS 4
 .EX
 
-$ cmd-which-errors | gs -f log.txt
+$ cmd-which-errors | gst -f log.txt
 https://gist.github.com/<new-id>
 
 .EE
@@ -111,7 +111,7 @@ The new gist can be posted under a GitHub user, a prompt will ask for your passw
 .RS 4
 .EX
 
-$ gs -u your-name good-proj.rs
+$ gst -u your-name good-proj.rs
 GitHub password:
 https://gist.github.com/<new-id>
 
@@ -122,7 +122,7 @@ To skip the prompt your password can be supplied after a colon with the username
 .RS 4
 .EX
 
-$ gs -u your-name:password plugin/func.vim doc/func.txt
+$ gst -u your-name:password plugin/func.vim doc/func.txt
 https://gist.github.com/<new-id>
 
 .EE
@@ -132,7 +132,7 @@ New gists can be private when created under a user:
 .RS 4
 .EX
 
-$ gs -p -u name personal.info
+$ gst -p -u name personal.info
 https://gist.github.com/<new-id>
 
 .EE
@@ -142,7 +142,7 @@ You can also edit a previously created gist under your account, such as adding a
 .RS 4
 .EX
 
-$ gs -e <id> -u name -d "new description" additional-file.txt
+$ gst -e <id> -u name -d "new description" additional-file.txt
 https://gist.github.com/<id>
 
 .EE
@@ -152,18 +152,18 @@ It is even possible to delete files, although it should be noted the gist still 
 .RS 4
 .EX
 
-$ gs -e <id> -u name -D old.py
+$ gst -e <id> -u name -D old.py
 https://gist.github.com/<id>
 
 .EE
 .RE
 .SH INSTALLATION
 .PP
-The only dependency needed to build gs is cURL. gs be compiled with a simple 'make' and 'sudo make install' will install the executable and man page.
+The only dependency needed to build gst is cURL. gst be compiled with a simple 'make' and 'sudo make install' will install the executable and man page.
 .PP
 .SH CUSTOMIZATION
 .PP
-gs can be customized by editing the custom 'config.h' and (re)compiling the source code. This keeps it fast, secure and simple. All customization can be done through the command line interface however, so basic aliases could also be utilized to change default options.
+gst can be customized by editing the custom 'config.h' and (re)compiling the source code. This keeps it fast, secure and simple. All customization can be done through the command line interface however, so basic aliases could also be utilized to change default options.
 .PP
 .SH AUTHOR
 .PP
@@ -171,9 +171,9 @@ Ed van Bruggen <ed@edryd.org>
 .PP
 .SH SEE ALSO
 .PP
-See project page at <https://edryd.org/projects/gs.html>
+See project page at <https://edryd.org/projects/gst.html>
 .PP
-View source code at <https://git.edryd.org/gs>
+View source code at <https://git.edryd.org/gst>
 .PP
 .SH LICENSE
 .PP

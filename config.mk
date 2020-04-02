@@ -1,4 +1,4 @@
-# gs version number
+# gst version number
 VERSION = 0.0.0
 
 # paths

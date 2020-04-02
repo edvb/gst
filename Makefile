@@ -1,10 +1,10 @@
-# gs - painless gist creator
+# gst - painless gist creator
 # See LICENSE file for copyright and license details.
 
 include config.mk
 
-EXE = gs
-SRC = gs.c util.c extern/frozen.c
+EXE = gst
+SRC = gst.c util.c extern/frozen.c
 OBJ = $(SRC:.c=.o)
 
 all: options $(EXE)
@@ -54,7 +54,7 @@ uninstall:
 
 man: $(EXE)
 	@echo updating man page $(EXE).1
-	@markman -nCD -t GS -V "$(EXE) $(VERSION)" -d "`date '+%B %Y'`" \
+	@markman -nCD -t GST -V "$(EXE) $(VERSION)" -d "`date '+%B %Y'`" \
 		-s "`./$(EXE) -h 2>&1 | cut -d' ' -f2-`" README.md > $(EXE).1
 
 .PHONY: all options clean install uninstall man
