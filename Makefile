@@ -49,7 +49,7 @@ install: all
 uninstall:
 	@echo removing $(EXE) from $(DESTDIR)$(PREFIX)/bin
 	@rm -f $(DESTDIR)$(PREFIX)/bin/$(EXE)
-	@echo -n removing manual page from $(DESTDIR)$(MANPREFIX)/man1
+	@echo removing manual page from $(DESTDIR)$(MANPREFIX)/man1
 	@rm -f $(DESTDIR)$(MANPREFIX)/man1/$(EXE).1
 
 man: $(EXE)
