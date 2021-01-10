@@ -25,6 +25,8 @@ typedef struct {
 /* variables */
 char *argv0;
 
+static char *file_str(FILE *fp);
+
 #include "config.h"
 
 /* used by cURL to write its response to a Str */
@@ -44,11 +46,12 @@ str_write(void *ptr, size_t size, size_t nmemb, Str *s)
 static Str
 http_post(char *content)
 {
-	char *resmsg, url[URL_SIZE];
+	char *resmsg, url[URL_SIZE], *tokenstr;
 	long code;
 	CURL *curl;
 	CURLcode res;
 	Str resstr;
+	struct curl_slist *chunk = NULL;
 
 	resstr.len = 0;
 	resstr.ptr = emalloc(resstr.len+1);
@@ -63,24 +66,33 @@ http_post(char *content)
 
 	/* set cURL options */
 	if (gist)
+		/* TODO if given URL split to get ID */
 		snprintf(url, sizeof(url), "%s/%s", ghurl, gist);
 	else
 		strcpy(url, ghurl);
 	curl_easy_setopt(curl, CURLOPT_URL, url);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, "gst/"VERSION);
-	if (user) {
-		if (strchr(user, ':')) {
-			curl_easy_setopt(curl, CURLOPT_USERPWD, user);
-		} else {
-			curl_easy_setopt(curl, CURLOPT_USERNAME, user);
-			curl_easy_setopt(curl, CURLOPT_PASSWORD, getpass("GitHub password: "));
-		}
-	}
 	if (gist)
 		curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, "PATCH");
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, content);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, str_write);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resstr);
+	if (tfile) {
+		FILE *fp = fopen(tfile, "r");
+		if (!fp) die(1, "%s: %s: could not load file", argv0, tfile);
+		token = file_str(fp);
+		fclose(fp);
+	}
+	if (token) {
+		puts(token);
+		tokenstr = emalloc((23+strlen(token))*sizeof(char));
+		strcpy(tokenstr, "Authorization: token ");
+		strcat(tokenstr, token);
+		chunk = curl_slist_append(chunk, tokenstr);
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);
+		free(tokenstr);
+		if (tfile) free(token);
+	}
 
 	/* run cURL */
 	if ((res = curl_easy_perform(curl)) != CURLE_OK) {
@@ -150,7 +162,7 @@ files_js(char *files[], int filec)
 		if (!fname && gist) /* don't need file if we are editing gist */
 			break;
 		if (!fname) /* check for file name when using stdin */
-			die(1, "%s: file name not given", argv0);
+			die(1, "%s: file not given", argv0);
 		if (i || del) /* insert comma if this is another file */
 			json_printf(&jout, ",");
 		fbuf = file_str(fp);
@@ -168,7 +180,7 @@ static void
 usage(const int eval)
 {
 	die(eval, "usage: %s [-pPhv] [-e ID [-D FILE]] [-d DESCRIPTION] [-f FILENAME]\n"
-	          "           [-g URL] [-u USER[:PASSWORD] | -U] FILES ...", argv0);
+	          "           [-g URL] [-U | -u TOKENFILE | -T TOKEN] FILES ...", argv0);
 }
 
 int
@@ -199,11 +211,15 @@ main(int argc, char *argv[])
 	case 'P':
 		pub = 1;
 		break;
+	case 'T':
+		token = EARGF(usage(1));
+		break;
 	case 'u':
-		user = EARGF(usage(1));
+		tfile = EARGF(usage(1));
 		break;
 	case 'U':
-		user = NULL;
+		tfile = NULL;
+		token = NULL;
 		break;
 	case 'h':
 		usage(0);
@@ -214,8 +230,8 @@ main(int argc, char *argv[])
 		usage(1);
 	} ARGEND;
 
-	if (gist && !user)
-		die(1, "%s: cannot edit gists without user", argv0);
+	if (gist && !token && !tfile)
+		die(1, "%s: cannot edit gists without token", argv0);
 
 	js = files_js(argv, argc);
 	resstr = http_post(js);
