@@ -8,10 +8,8 @@
 
 #include "extern/arg.h"
 #include "extern/frozen.h"
-#include "util.h"
 
 /* defines */
-/* TODO remove BUF_SIZEs */
 #define LBUF_SIZE 1024
 #define BUF_SIZE  100000
 #define URL_SIZE  2048
@@ -29,12 +27,32 @@ static char *file_str(FILE *fp);
 
 #include "config.h"
 
+void
+die(int eval, const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+
+	if (fmt[0] && fmt[strlen(fmt)-1] == ':') {
+		fputc(' ', stderr);
+		perror(NULL);
+	} else {
+		fputc('\n', stderr);
+	}
+
+	if (eval > -1)
+		exit(eval);
+}
 /* used by cURL to write its response to a Str */
 static size_t
 str_write(void *ptr, size_t size, size_t nmemb, Str *s)
 {
 	size_t nlen = s->len + size*nmemb;
-	s->ptr = erealloc(s->ptr, nlen+1);
+	if (!(s->ptr = realloc(s->ptr, nlen+1)))
+		die(1, "realloc:");
 	memcpy(s->ptr+s->len, ptr, size*nmemb);
 	s->ptr[nlen] = '\0';
 	s->len = nlen;
@@ -54,7 +72,8 @@ http_post(char *content)
 	struct curl_slist *chunk = NULL;
 
 	resstr.len = 0;
-	resstr.ptr = emalloc(resstr.len+1);
+	if (!(resstr.ptr = malloc(resstr.len+1)))
+		die(1, "malloc:");
 	resstr.ptr[0] = '\0';
 
 	/* init cURL */
@@ -84,8 +103,8 @@ http_post(char *content)
 		fclose(fp);
 	}
 	if (token) {
-		puts(token);
-		tokenstr = emalloc((23+strlen(token))*sizeof(char));
+		if (!(tokenstr = malloc((23+strlen(token))*sizeof(char))))
+			die(1, "malloc:");
 		strcpy(tokenstr, "Authorization: token ");
 		strcat(tokenstr, token);
 		chunk = curl_slist_append(chunk, tokenstr);
@@ -120,15 +139,17 @@ http_post(char *content)
 static char *
 file_str(FILE *fp)
 {
-	char lbuf[LBUF_SIZE];                         /* buffer for each line */
-	char *str = ecalloc(LBUF_SIZE, sizeof(char)); /* complete file */
-	long flen = 1;                                /* file length */
+	char buf[LBUF_SIZE]; /* buffer for each chuck */
+	char *str = calloc(LBUF_SIZE, sizeof(char)); /* complete file */
+	size_t flen = 1; /* file length, start at 1 for null terminator */
 
-	/* loop through each line in the file, append it to str */
-	while (fgets(lbuf, LBUF_SIZE, fp)) {
-		flen += strlen(lbuf);
-		str = erealloc(str, flen);
-		strcat(str, lbuf);
+	if (!str) die(1, "calloc:");
+	/* loop through each LBUF_SIZE chunk in file, append it to str */
+	while (fgets(buf, LBUF_SIZE, fp)) {
+		flen += strlen(buf);
+		str = realloc(str, flen);
+		if (!str) die(1, "realloc:");
+		strncat(str, buf, LBUF_SIZE);
 	}
 
 	return str;
@@ -139,10 +160,11 @@ static char *
 files_js(char *files[], int filec)
 {
 	char *fbuf; /* file contents */
-	char *js = emalloc(BUF_SIZE*sizeof(char)); /* json string returned */
+	char *js = malloc(BUF_SIZE*sizeof(char)); /* json string returned */
 	FILE *fp = stdin; /* read from stdin by default if no file is given */
 	struct json_out jout = JSON_OUT_BUF(js, BUF_SIZE);
 
+	if (!js) die(1, "malloc:");
 	json_printf(&jout, "{ public: %B,", pub);
 	if (!desc && !gist) /* when creating new gist if no description given make it empty */
 		desc = "";

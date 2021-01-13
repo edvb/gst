@@ -4,7 +4,7 @@
 include config.mk
 
 EXE = gst
-SRC = gst.c util.c extern/frozen.c
+SRC = gst.c extern/frozen.c
 OBJ = $(SRC:.c=.o)
 
 all: options $(EXE)
