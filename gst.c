@@ -246,7 +246,7 @@ main(int argc, char *argv[])
 	case 'h':
 		usage(0);
 	case 'v':
-		printf("%s v%s (c) 2017-2020 Ed van Bruggen\n", argv0, VERSION);
+		printf("%s v%s (c) 2017-2021 Ed van Bruggen\n", argv0, VERSION);
 		return 0;
 	default:
 		usage(1);
