@@ -27,32 +27,13 @@ static char *file_str(FILE *fp);
 
 #include "config.h"
 
-void
-die(int eval, const char *fmt, ...)
-{
-	va_list ap;
-
-	va_start(ap, fmt);
-	vfprintf(stderr, fmt, ap);
-	va_end(ap);
-
-	if (fmt[0] && fmt[strlen(fmt)-1] == ':') {
-		fputc(' ', stderr);
-		perror(NULL);
-	} else {
-		fputc('\n', stderr);
-	}
-
-	if (eval > -1)
-		exit(eval);
-}
 /* used by cURL to write its response to a Str */
 static size_t
 str_write(void *ptr, size_t size, size_t nmemb, Str *s)
 {
 	size_t nlen = s->len + size*nmemb;
 	if (!(s->ptr = realloc(s->ptr, nlen+1)))
-		die(1, "realloc:");
+		perror("realloc: "), exit(1);
 	memcpy(s->ptr+s->len, ptr, size*nmemb);
 	s->ptr[nlen] = '\0';
 	s->len = nlen;
@@ -73,14 +54,15 @@ http_post(char *content)
 
 	resstr.len = 0;
 	if (!(resstr.ptr = malloc(resstr.len+1)))
-		die(1, "malloc:");
+		perror("malloc: "), exit(1);
 	resstr.ptr[0] = '\0';
 
 	/* init cURL */
 	curl_global_init(CURL_GLOBAL_ALL);
 	if (!(curl = curl_easy_init())) {
 		curl_global_cleanup();
-		die(1, "%s: cURL: could not init", argv0);
+		fprintf(stderr, "%s:  cURL: could not init", argv0);
+		exit(1);
 	}
 
 	/* set cURL options */
@@ -97,14 +79,14 @@ http_post(char *content)
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, str_write);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &resstr);
 	if (tfile) {
-		FILE *fp = fopen(tfile, "r");
-		if (!fp) die(1, "%s: %s: could not load file", argv0, tfile);
-		token = file_str(fp);
-		fclose(fp);
+		FILE *f = fopen(tfile, "r");
+		if (!f) fprintf(stderr, "%s: %s: could not load file", argv0, tfile), exit(1);
+		token = file_str(f);
+		fclose(f);
 	}
 	if (token) {
 		if (!(tokenstr = malloc((23+strlen(token))*sizeof(char))))
-			die(1, "malloc:");
+			perror("malloc: "), exit(1);
 		strcpy(tokenstr, "Authorization: token ");
 		strcat(tokenstr, token);
 		chunk = curl_slist_append(chunk, tokenstr);
@@ -116,7 +98,8 @@ http_post(char *content)
 	/* run cURL */
 	if ((res = curl_easy_perform(curl)) != CURLE_OK) {
 		curl_global_cleanup();
-		die(1, "%s: cURL: %s", argv0, curl_easy_strerror(res));
+		fprintf(stderr, "%s: cURL: %s", argv0, curl_easy_strerror(res));
+		exit(1);
 	}
 
 	/* response checking and cleanup */
@@ -126,8 +109,7 @@ http_post(char *content)
 	/* 200 returned when editing gist, 201 when creating */
 	if (code != (gist ? 200 : 201)) {
 		json_scanf(resstr.ptr, resstr.len, "{message: %Q}", &resmsg);
-		die(-1, "%s: [%d] could not create gist: %s",
-		         argv0, code, resmsg);
+		fprintf(stderr, "%s: [%d] could not create gist: %s", argv0, code, resmsg);
 		free(resmsg);
 		exit(1);
 	}
@@ -143,12 +125,12 @@ file_str(FILE *fp)
 	char *str = calloc(LBUF_SIZE, sizeof(char)); /* complete file */
 	size_t flen = 1; /* file length, start at 1 for null terminator */
 
-	if (!str) die(1, "calloc:");
+	if (!str) perror("calloc: "), exit(1);
 	/* loop through each LBUF_SIZE chunk in file, append it to str */
 	while (fgets(buf, LBUF_SIZE, fp)) {
 		flen += strlen(buf);
 		str = realloc(str, flen);
-		if (!str) die(1, "realloc:");
+		if (!str) perror("realloc: "), exit(1);
 		strncat(str, buf, LBUF_SIZE);
 	}
 
@@ -164,7 +146,7 @@ files_js(char *files[], int filec)
 	FILE *fp = stdin; /* read from stdin by default if no file is given */
 	struct json_out jout = JSON_OUT_BUF(js, BUF_SIZE);
 
-	if (!js) die(1, "malloc:");
+	if (!js) perror("malloc: "), exit(1);
 	json_printf(&jout, "{ public: %B,", pub);
 	if (!desc && !gist) /* when creating new gist if no description given make it empty */
 		desc = "";
@@ -178,13 +160,13 @@ files_js(char *files[], int filec)
 	/* add each file */
 	for (int i = 0; !i || i < filec; i++) {
 		if (filec && !(fp = fopen(files[i], "r")))
-			die(1, "%s: %s: could not load file", argv0, files[i]);
+			fprintf(stderr, "%s: %s: could not load file", argv0, files[i]), exit(1);
 		if (filec) /* set file name if given */
 			fname = files[i];
 		if (!fname && gist) /* don't need file if we are editing gist */
 			break;
 		if (!fname) /* check for file name when using stdin */
-			die(1, "%s: file not given", argv0);
+			fprintf(stderr, "%s: file not given", argv0), exit(1);
 		if (i || del) /* insert comma if this is another file */
 			json_printf(&jout, ",");
 		fbuf = file_str(fp);
@@ -201,8 +183,9 @@ files_js(char *files[], int filec)
 static void
 usage(const int eval)
 {
-	die(eval, "usage: %s [-pPhv] [-e ID [-D FILE]] [-d DESCRIPTION] [-f FILENAME]\n"
-	          "           [-g URL] [-U | -u TOKENFILE | -T TOKEN] FILES ...", argv0);
+	fprintf(stderr, "usage: %s [-pPhv] [-e ID [-D FILE]] [-d DESCRIPTION] [-f FILENAME]\n"
+	               "           [-g URL] [-U | -u TOKENFILE | -T TOKEN] FILES ...", argv0);
+	exit(eval);
 }
 
 int
@@ -246,14 +229,14 @@ main(int argc, char *argv[])
 	case 'h':
 		usage(0);
 	case 'v':
-		printf("%s v%s (c) 2017-2021 Ed van Bruggen\n", argv0, VERSION);
+		fprintf(stderr, "%s v%s (c) 2017-2021 Ed van Bruggen\n", argv0, VERSION);
 		return 0;
 	default:
 		usage(1);
 	} ARGEND;
 
 	if (gist && !token && !tfile)
-		die(1, "%s: cannot edit gists without token", argv0);
+		fprintf(stderr, "%s: cannot edit gists without token", argv0), exit(1);
 
 	js = files_js(argv, argc);
 	resstr = http_post(js);
